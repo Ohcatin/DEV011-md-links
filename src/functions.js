@@ -21,27 +21,23 @@ const isArchiveMarkdown = (ruta) => {
 
 const readFiles = (ruta) => fs.readFile(ruta, 'utf-8');
 
-const findLinks = (contenido, rutaArchivo) => {
-    const tokens = md.parse(contenido, {});
-  
-    const links = [];
-  
-    tokens.forEach((token, index) => {
-      if (token.type === 'link_open') {
-        // Encontramos un enlace
-        const linkHref = tokens[index + 1].content;
-        const linkText = tokens[index + 2].content;
-  
+function findLinks(content, filePath) {
+  return new Promise((resolve, reject) => {
+     const links = [];
+     const regex = /\[([^\]]+)\]\(([^)]+)\)/g;
+     let match;
+
+     while ((match = regex.exec(content)) !== null) {
         links.push({
-          href: linkHref,
-          text: linkText,
-          file: rutaArchivo,
+           text: match[1],
+           href: match[2],
+           file: filePath,
         });
-      }
-    });
-  
-    return links;
-};
+     }
+
+     resolve(links);
+  });
+}
   module.exports = {
     isAbsolutePath, 
     convertAbsolutePath, 

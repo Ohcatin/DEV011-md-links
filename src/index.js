@@ -5,7 +5,7 @@ const {
   isArchiveMarkdown,
   readFiles,
   findLinks,
-} = require("./functions.js");
+} = require("./functions");
 
 const mdLinks = (ruta) => {
   const rutaAbsoluta = convertAbsolutePath(ruta);
