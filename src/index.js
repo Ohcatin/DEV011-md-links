@@ -1,13 +1,14 @@
 const {
-  isAbsolutePath,
   convertAbsolutePath,
   verifyExistence,
   isArchiveMarkdown,
   readFiles,
   findLinks,
+  validateLinks,
 } = require("./functions");
 
-const mdLinks = (ruta) => {
+const mdLinks = (ruta, validate = false) => {
+  
   const rutaAbsoluta = convertAbsolutePath(ruta);
 
   return new Promise((resolve, reject) => {
@@ -26,7 +27,15 @@ const mdLinks = (ruta) => {
       .then((contenido) => {
         console.log('Contenido del archivo:', contenido);
         const links = findLinks(contenido, rutaAbsoluta);
+
+        if (validate) {
+          return validateLinks(links);
+        }
+
         resolve(links);
+      })
+      .then((result) => {
+        resolve(result);
       })
       .catch(reject);
   });

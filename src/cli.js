@@ -1,9 +1,9 @@
 const mdLinks = require("./index.js");
 
-  mdLinks('archivos/prueba.md')
-  .then((links) => {
-    console.log(links);
+  mdLinks("C:/Users/Catita/Documents/DEV011-md-links/archivos/prueba.md", true)
+  .then((result) => {
+    console.log(result);
   })
   .catch((error) => {
-    console.error(error);
+    console.error(error.message);
   });
