@@ -1,13 +1,17 @@
 const fs = require('fs').promises;
 const path = require('path');
 const {
-  isAbsolutePath,
   convertAbsolutePath,
   verifyExistence,
   isArchiveMarkdown,
   readFiles,
   findLinks,
+  validateLinks,
+  statsLinks,
 } = require("../src/functions.js");
+const axios = require('axios');
+
+jest.mock('axios');
 
 const mdLinks = require('../src/index.js');
 describe('mdLinks', () => {
@@ -29,7 +33,17 @@ describe('convertAbsolutePath', () =>{
       expect(convertAbsolutePath(relativePath)).toBe(expectedAbsolutePath);
   })
 })
+describe("verifyExistence", () => {
+  it("should return true if the path exists", async () => {
+    const pathExists = await verifyExistence('docs/03-milestone.md');
+    expect(pathExists).toBe(true);
+  });
 
+  it("should return false if the path does not exist", async () => {
+    const pathExists = await verifyExistence('docs/archivo_inexistente.md');
+    expect(pathExists).toBe(false);
+  });
+});
 describe('isArchiveMarkdown', () => {
   it('Debería devolver true para una ruta de archivo Markdown', () => {
     const markdownFilePath = '../archivos/prueba.md';
@@ -42,3 +56,95 @@ describe('isArchiveMarkdown', () => {
     expect(isArchiveMarkdown(noExtensionPath)).toBe(false);
   });
 });
+
+describe("findLinks", () => {
+  it("crea un objeto", () => {
+    const links = findLinks("./archivos/pruebauno.md");
+    const result = [];
+    expect(links).toEqual(result);
+  });
+  it("extrae los links", () => {
+    const data =
+    "[Modules: CommonJS modules - Node.js Docs](https://nodejs.org/docs/latest/api/modules.html)";
+    const route =
+      "C:/Users/Catita/Documents/DEV011-md-links/archivos/pruebauno.md";
+    const links = findLinks(data, route);
+    const result = [
+      {
+        href: "https://nodejs.org/docs/latest/api/modules.html",
+        text: "Modules: CommonJS modules - Node.js Docs",
+        file: "C:/Users/Catita/Documents/DEV011-md-links/archivos/pruebauno.md",
+      },
+    ];
+    expect(links).toEqual(result);
+  });
+});
+
+describe("validateLink", () => {
+  it("valida los link con status y ok", async () => {
+    axios.get.mockResolvedValue({ status: 200, ok: "ok" });
+    const links = [
+      {
+        href: "https://nodejs.org/docs/latest/api/modules.html",
+        text: "Modules: CommonJS modules - Node.js Docs",
+        file: "C:/Users/Catita/Documents/DEV011-md-links/archivos/pruebauno.md",
+      }
+    ];
+    const validate = await validateLinks(links);
+    const result = [
+      {
+        href: "https://nodejs.org/docs/latest/api/modules.html",
+        text: "Modules: CommonJS modules - Node.js Docs",
+        file: "C:/Users/Catita/Documents/DEV011-md-links/archivos/pruebauno.md",
+        status: 200,
+        ok: "ok",
+      }
+    ];
+    expect(validate).toEqual(result);
+  });
+});
+
+describe("validateLink", () => {
+  it("error en la solicitud", async () => {
+    axios.get.mockRejectedValue({response: { status: 404 }});
+    const links = [
+      {
+      href: "https://www.ejemploenlacefuera.com",
+      text: "[Ejemplo enlace fuera de servicio",
+      file: "C:/Users/Catita/Documents/DEV011-md-links/archivos/pruebauno.md",
+      }
+    ];
+    const validate = await validateLinks(links);
+    const result = [
+      {
+        href: "https://www.ejemploenlacefuera.com",
+        text: "[Ejemplo enlace fuera de servicio",
+        file: "C:/Users/Catita/Documents/DEV011-md-links/archivos/pruebauno.md",
+        status: 404,
+        ok: 'fail'
+      }
+    ];
+    expect(validate).toEqual(result);
+  });
+});
+
+describe('statsLinks', () =>{
+  it ('muestra las estadisticas', async () =>{
+    const data = [
+      {
+        href: "https://www.ejemploenlacefuera.com",
+        text: "[Ejemplo enlace fuera de servicio",
+        file: "C:/Users/Catita/Documents/DEV011-md-links/archivos/pruebauno.md",
+        status: 404,
+        ok: 'fail'
+      }
+    ]
+    const links = await statsLinks(data);
+    const result = { Total: 1, Unique: 1, Broken: 1 };
+    expect(links).toEqual(result);
+
+
+  })
+
+
+})
