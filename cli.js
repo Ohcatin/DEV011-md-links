@@ -1,7 +1,9 @@
-const mdLinks = require("./index.js");
+#!/usr/bin/env node
 
-const args = process.argv.slice(2);
-const archive = args[0];
+const mdLinks = require("./index");
+
+// Obtener argumentos desde la línea de comandos
+const [archive, ...args] = process.argv.slice(2);
 const options = {
   validate: args.includes('--validate'),
   stats: args.includes('--stats')

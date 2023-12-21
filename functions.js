@@ -1,15 +1,12 @@
 const path = require('path');
 const fs = require('fs').promises; 
 const axios = require("axios");
-
+const fsS = require('fs');
 // funcion para convertir en absoluta si es relativa o dejar como absoluta
 const convertAbsolutePath = (route) => (path.isAbsolute(route) ? route : path.resolve(route));
 // funcion para verificar si la ruta existe
 const verifyExistence = (ruta) => {
-  //console.log('Verificando ruta:', ruta);
-  return fs.access(ruta)
-    .then(() => true)
-    .catch(() => false);
+  return fsS.existsSync(ruta);
 };
 // funcion para saber si es mk...
 const isArchiveMarkdown = (ruta) => {
